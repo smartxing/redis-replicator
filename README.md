@@ -76,7 +76,7 @@
 >> c) redis slave保存的run id与master当前run id一致 (注：run id并不是pid，slave把它保存在内存中，重启就消失)    
 >> d) redis slave掉线期间，master保存在内存的offset可用，也就是master变化不大，被更改的指令都保存在内存    
 #### 实践
-##### 读写分离，redis通常用来做缓存，所有通过redis 复制策略，可以写主读从，减少master压力
+##### 读写分离，redis通常用来做缓存，所以通过redis 复制策略，可以写主读从，减少master压力
 ##### 主数据库禁止备份，从数据库备份，提升master性能， master挂掉后从slave提升为主  
 ##### 注意 不要直接操作master,不然master会把空的文件同步到slave，那样可能会造成数据全部丢失
 

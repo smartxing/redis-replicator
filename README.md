@@ -60,7 +60,11 @@
 
 
 ## redis 主从复制
+### 基本流程
 ![Alt text](https://github.com/smartxing/imageflod/blob/master/redisfullsync.png)
+
+### 3次握手
+![Alt text](https://github.com/smartxing/imageflod/blob/master/redissync2.png)
 >> 1 当启动一个slave node的时候，它会发送一个PSYNC命令给master node    
 >> 2 如果这是slave node重新连接master node，那么master node仅仅会复制给slave部分缺少的数据; 否则如果是slave node第一次连接master node，那么会触发一次full resynchronization    
 >> 3 开始full resynchronization的时候，master会启动一个后台线程，开始生成一份RDB快照文件，同时还会将从客户端收到的所有写命令缓存在内存中。RDB文件生成完毕之后，master会将这个RDB发送给slave，slave会先写入本地磁盘，然后再从本地磁盘加载到内存中。然后master会将内存中缓存的写命令发送给slave，slave也会同步这些数据。    
@@ -83,13 +87,52 @@
 #### 上述是原理部分，下面开始设计下功能
 # 系统功能设计
 ## 整体架构
+
 ![Alt text](https://github.com/smartxing/imageflod/blob/master/dcsysnc.png)
 
-## 全量RDB同步
-### 实现
-## 增量commond同步
-### 实现
+
+## 主要难点就是 解析RDB，解析命令 这个有大牛网上已经开源了，所以说这就没有什么难度了
+## 大牛地址：https://github.com/leonchen83/redis-replicator  基本都能满足需求了 感谢大牛
+### 全量RDB同步,增量commond同步
+```java
+
+        RdbDistribute rdbDistribute = new RdbDistribute();
+        rdbDistribute.addCommonParserListener(new CommonParserListener() {
+            @Override
+            public void process(Replicator replicator, KeyValuePair keyValuePair) {
+                //commond 解析
+            }
+        });
+        
+        rdbDistribute.addRdbParserListeners(new RdbParserListener() {
+            @Override
+            public void process(Replicator replicator, Command command) {
+                //rdb 解析
+            }
+        });
+```
+
+### 定期备份
+```java
+    @Scheduled(cron = "0 0 12 * * ?")
+    public void rdbBackUp() {
+        RdbBackup rdbBackup = new RdbBackup();
+        try {
+            rdbBackup.backUPRdb(env.getProperty("", ""), env.getProperty("", ""));
+        } catch (Exception e) {
+            logger.error("back up error", e);
+        }
+    }
 
 
+    @Scheduled(cron = "0 0 12 * * ?")
+    public void aofBackUp() {
+        CommandBackup rdbBackup = new CommandBackup();
+        try {
+            rdbBackup.backupAof(env.getProperty("", ""), env.getProperty("", ""));
+        } catch (Exception e) {
+            logger.error("back up error", e);
+        }
+    }
+```
 
-联系：qq:787069354

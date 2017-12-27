@@ -81,5 +81,15 @@
 ##### 注意 不要直接操作master,不然master会把空的文件同步到slave，那样可能会造成数据全部丢失
 
 #### 上述是原理部分，下面开始设计下功能
-#### 系统功能设计
+# 系统功能设计
+## 整体架构
+![Alt text](https://github.com/smartxing/imageflod/blob/master/dcsysnc.png)
 
+## 全量RDB同步
+### 实现
+## 增量commond同步
+### 实现
+
+
+
+联系：qq:787069354
